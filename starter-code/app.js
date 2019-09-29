@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express            = require('express');
 const path               = require('path');
 const favicon            = require('serve-favicon');
@@ -14,9 +16,14 @@ const mongoose           = require('mongoose');
 const flash              = require('connect-flash');
 const hbs                = require('hbs')
 
-mongoose.connect('mongodb://localhost:27017/tumblr-lab-development');
+mongoose.connect('mongodb://localhost:27017/tumblr-lab-development', {
+  useCreateIndex: true,
+  useNewUrlParser: true
+});
 
 const app = express();
+
+hbs.registerPartials(__dirname + "/views/partials");
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
@@ -78,7 +85,7 @@ passport.use('local-signup', new LocalStrategy(
                 const newUser = new User({
                   username,
                   email,
-                  password: hashPass
+                  password: hashPass,
                 });
 
                 newUser.save((err) => {
@@ -99,10 +106,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const index = require('./routes/index');
-const authRoutes = require('./routes/authentication');
-app.use('/', index);
-app.use('/', authRoutes);
+const index = require("./routes/index");
+const authRoutes = require("./routes/authentication");
+const postRoutes = require("./routes/post");
+app.use("/", index);
+app.use("/", authRoutes);
+app.use("/", postRoutes);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
